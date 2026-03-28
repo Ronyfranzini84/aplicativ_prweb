@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pucache__/
+*.pyc
+.env
+.vscode/
+.idea/
+# Arquivos Excel
+*.xlsx
+*.xls
+*.xlsm
