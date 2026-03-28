@@ -9,3 +9,10 @@ __pucache__/
 *.xlsx
 *.xls
 *.xlsm
+.venv/
+__pycache__/
+build/
+dist/
+*.pyc
+pedidos.xlsx
+pedidos_resultado.xlsx
