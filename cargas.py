@@ -152,8 +152,24 @@ class PRWebAutomation:
                 self.driver.quit()
 
 
+def _garantir_openpyxl() -> None:
+    try:
+        import openpyxl  # noqa: F401
+    except ImportError as exc:
+        raise RuntimeError(
+            "O suporte a arquivos .xlsx requer a biblioteca 'openpyxl'. "
+            "Instale com: pip install openpyxl"
+        ) from exc
+
+
 def carregar_dataframe(caminho_arquivo: str) -> pd.DataFrame:
-    return pd.read_excel(caminho_arquivo)
+    _garantir_openpyxl()
+    return pd.read_excel(caminho_arquivo, engine="openpyxl")
+
+
+def salvar_dataframe(df: pd.DataFrame, caminho_arquivo: str) -> None:
+    _garantir_openpyxl()
+    df.to_excel(caminho_arquivo, index=False, engine="openpyxl")
 
 
 def executar_transferencia(
@@ -183,5 +199,5 @@ if __name__ == "__main__":
 
     df_pedidos = carregar_dataframe(entrada)
     df_resultado = executar_transferencia(df_pedidos, configuracao, status_callback=print)
-    df_resultado.to_excel(saida, index=False)
+    salvar_dataframe(df_resultado, saida)
     print(f"Resultados salvos em: {saida}")

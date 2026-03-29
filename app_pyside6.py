@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from cargas import PRWebConfig, executar_transferencia
+from cargas import PRWebConfig, carregar_dataframe, executar_transferencia, salvar_dataframe
 
 
 class ProcessWorker(QObject):
@@ -54,7 +54,7 @@ class ProcessWorker(QObject):
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("App PRWeb - Cargas")
+        self.setWindowTitle("App PRWeb - Pedidos")
         self.resize(980, 700)
 
         self.signature_text = "© 2026 Rony Franzini"
@@ -69,6 +69,7 @@ class MainWindow(QMainWindow):
         self.input_path_edit.setPlaceholderText("Selecione um arquivo .xlsx")
 
         self.output_path_edit = QLineEdit(str(Path.cwd() / "pedidos_resultado.xlsx"))
+        self.output_path_edit.setPlaceholderText("Selecione um arquivo .xlsx para analise")
 
         self.empresa_gateway_spin = self._spinbox(0, 999999999, 29)
         self.empresa_pr_spin = self._spinbox(0, 999999999, 21)
@@ -82,10 +83,9 @@ class MainWindow(QMainWindow):
 
         self.only_msg_check = QCheckBox("Exportar apenas linhas com mensagem")
 
-        self.import_btn = QPushButton("Importar Planilha")
+        self.import_btn = QPushButton("Importar Entrada")
         self.process_btn = QPushButton("Processar no PRWeb")
-        self.export_btn = QPushButton("Exportar Resultado")
-        self.export_btn.setEnabled(False)
+        self.export_btn = QPushButton("Analisar Saida")
 
         self.table = QTableWidget(0, 0)
         self.signature_label = QLabel(self.signature_text)
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
 
         root_layout = QVBoxLayout(central)
 
-        title = QLabel("ORGANIZADOR DE CARGAS PRWEB")
+        title = QLabel("ORGANIZADOR DE PEDIDOS - PRWeb")
         title.setObjectName("mainTitle")
         title.setAlignment(Qt.AlignHCenter)
 
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         arquivo_layout.addWidget(self.input_path_edit, 0, 1)
         arquivo_layout.addWidget(browse_input_btn, 0, 2)
 
-        arquivo_layout.addWidget(QLabel("Saida (.xlsx):"), 1, 0)
+        arquivo_layout.addWidget(QLabel("Saida / Analise (.xlsx):"), 1, 0)
         arquivo_layout.addWidget(self.output_path_edit, 1, 1)
         arquivo_layout.addWidget(browse_output_btn, 1, 2)
 
@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
     def _connect_signals(self) -> None:
         self.import_btn.clicked.connect(self._import_dataframe)
         self.process_btn.clicked.connect(self._processar)
-        self.export_btn.clicked.connect(self._exportar)
+        self.export_btn.clicked.connect(self._analisar_saida)
 
     def _select_input_file(self) -> None:
         path, _ = QFileDialog.getOpenFileName(self, "Selecionar arquivo de entrada", "", "Excel (*.xlsx)")
@@ -259,7 +259,12 @@ class MainWindow(QMainWindow):
             self.input_path_edit.setText(path)
 
     def _select_output_file(self) -> None:
-        path, _ = QFileDialog.getSaveFileName(self, "Salvar resultado", self.output_path_edit.text(), "Excel (*.xlsx)")
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Selecionar arquivo de saida / analise",
+            self.output_path_edit.text(),
+            "Excel (*.xlsx)",
+        )
         if path:
             self.output_path_edit.setText(path)
 
@@ -270,7 +275,7 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            df = pd.read_excel(path)
+            df = carregar_dataframe(path)
         except Exception as exc:
             QMessageBox.critical(self, "Erro ao importar", str(exc))
             return
@@ -285,7 +290,6 @@ class MainWindow(QMainWindow):
 
         self.df_entrada = df
         self.df_resultado = None
-        self.export_btn.setEnabled(False)
         self._carregar_tabela(df.head(200))
         self.statusBar().showMessage(f"Planilha importada com {len(df)} linhas")
 
@@ -332,9 +336,24 @@ class MainWindow(QMainWindow):
 
     def _on_process_finished(self, resultado: pd.DataFrame) -> None:
         self.df_resultado = resultado
-        self.export_btn.setEnabled(True)
         self._carregar_tabela(resultado.head(200))
-        self.statusBar().showMessage("Processamento concluido")
+        output_path = self.output_path_edit.text().strip()
+
+        if not output_path:
+            self.statusBar().showMessage("Processamento concluido. Defina o arquivo de saida para salvar.")
+            return
+
+        try:
+            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+            salvar_dataframe(resultado, output_path)
+            self.statusBar().showMessage(f"Processamento concluido e salvo em: {output_path}")
+        except Exception as exc:
+            QMessageBox.warning(
+                self,
+                "Falha ao salvar resultado",
+                f"O processamento terminou, mas nao foi possivel salvar o arquivo de saida.\n\n{exc}",
+            )
+            self.statusBar().showMessage("Processamento concluido, mas houve falha ao salvar a saida")
 
     def _on_process_error(self, error_text: str) -> None:
         self.statusBar().showMessage("Falha no processamento")
@@ -363,26 +382,28 @@ class MainWindow(QMainWindow):
 
         self.table.resizeColumnsToContents()
 
-    def _exportar(self) -> None:
-        if self.df_resultado is None:
-            QMessageBox.warning(self, "Sem resultado", "Nenhum resultado para exportar.")
-            return
-
+    def _analisar_saida(self) -> None:
         output_path = self.output_path_edit.text().strip()
         if not output_path:
-            QMessageBox.warning(self, "Arquivo de saida", "Defina o caminho de exportacao.")
+            QMessageBox.warning(self, "Arquivo de saida", "Selecione o arquivo de saida para analise.")
             return
 
-        df_export = self.df_resultado.copy()
-        if self.only_msg_check.isChecked() and "msg" in df_export.columns:
-            df_export = df_export[df_export["msg"].astype(str).str.strip() != ""]
+        if not Path(output_path).exists():
+            QMessageBox.warning(self, "Arquivo nao encontrado", "O arquivo de saida informado nao existe.")
+            return
 
         try:
-            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-            df_export.to_excel(output_path, index=False)
-            self.statusBar().showMessage(f"Resultado exportado em: {output_path}")
+            df_resultado = carregar_dataframe(output_path)
         except Exception as exc:
-            QMessageBox.critical(self, "Erro ao exportar", str(exc))
+            QMessageBox.critical(self, "Erro ao analisar saida", str(exc))
+            return
+
+        if self.only_msg_check.isChecked() and "msg" in df_resultado.columns:
+            df_resultado = df_resultado[df_resultado["msg"].astype(str).str.strip() != ""]
+
+        self.df_resultado = df_resultado
+        self._carregar_tabela(df_resultado.head(200))
+        self.statusBar().showMessage(f"Saida carregada com {len(df_resultado)} linhas")
 
 
 if __name__ == "__main__":
