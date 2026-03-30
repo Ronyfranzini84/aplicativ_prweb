@@ -71,15 +71,15 @@ class MainWindow(QMainWindow):
         self.output_path_edit = QLineEdit(str(Path.cwd() / "pedidos_resultado.xlsx"))
         self.output_path_edit.setPlaceholderText("Selecione um arquivo .xlsx para analise")
 
-        self.empresa_gateway_spin = self._spinbox(0, 999999999, 29)
-        self.empresa_pr_spin = self._spinbox(0, 999999999, 21)
-        self.login_spin = self._spinbox(0, 999999999, 2634333)
+        self.empresa_gateway_spin = self._spinbox(0, 999999999, 0)
+        self.empresa_pr_spin = self._spinbox(0, 999999999, 0)
+        self.login_spin = self._spinbox(0, 999999999, 0)
         self.senha_edit = QLineEdit("qwer7410")
         self.senha_edit.setEchoMode(QLineEdit.Password)
-        self.filial_spin = self._spinbox(0, 999999999, 1400)
+        self.filial_spin = self._spinbox(0, 999999999, 0)
         self.atividade_edit = QLineEdit("D")
-        self.motivo_spin = self._spinbox(0, 999999999, 35)
-        self.carga_spin = self._spinbox(0, 999999999, 16335512)
+        self.motivo_spin = self._spinbox(0, 999999999, 0)
+        self.carga_spin = self._spinbox(0, 999999999, 0)
 
         self.only_msg_check = QCheckBox("Exportar apenas linhas com mensagem")
 
