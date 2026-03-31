@@ -1,8 +1,4 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_submodules
-
-hiddenimports = ['openpyxl', 'webdriver_manager']
-hiddenimports += collect_submodules('webdriver_manager')
 
 
 a = Analysis(
@@ -10,7 +6,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=hiddenimports,
+    hiddenimports=['openpyxl', 'et_xmlfile'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -25,12 +21,12 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='AppPRWeb',
+    name='AppPRWebDebug',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
@@ -44,5 +40,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='AppPRWeb',
+    name='AppPRWebDebug',
 )

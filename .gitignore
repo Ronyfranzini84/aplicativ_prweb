@@ -18,3 +18,6 @@ pedidos.xlsx
 pedidos_resultado.xlsx
 dist.zip/
 dist.zip
+.spec
+.venv311/
+venv311/

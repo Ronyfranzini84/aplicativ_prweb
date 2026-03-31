@@ -92,6 +92,36 @@ Colunas adicionadas/atualizadas no resultado:
 - O resultado e salvo em `.xlsx` usando `openpyxl`.
 - Se o arquivo de saida estiver bloqueado (ex.: aberto no Excel), o sistema cria um arquivo alternativo com timestamp.
 
+## Gerar executavel (Windows)
+
+Use Python 3.11 para o build. O comando abaixo ja inclui a coleta de modulos do `webdriver_manager`, evitando o erro de import no executavel.
+
+1. Criar ambiente de build com Python 3.11:
+
+```powershell
+py -3.11 -m venv .venv311
+```
+
+2. Instalar dependencias no ambiente de build:
+
+```powershell
+.\.venv311\Scripts\python.exe -m pip install -r requirements.txt pyinstaller webdriver-manager
+```
+
+3. Gerar o executavel:
+
+```powershell
+.\.venv311\Scripts\python.exe -m PyInstaller app_pyside6.py --name AppPRWeb --onedir --windowed --noconfirm --clean --hidden-import openpyxl --hidden-import webdriver_manager --collect-submodules webdriver_manager
+```
+
+Saida gerada em:
+
+- `dist\AppPRWeb\AppPRWeb.exe`
+
+Observacao:
+
+- Para distribuir, compacte a pasta inteira `dist\AppPRWeb` (nao apenas o `.exe`).
+
 ## Observacoes importantes
 
 - O Chrome sera aberto durante a execucao da automacao.
