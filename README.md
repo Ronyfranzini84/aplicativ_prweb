@@ -1,48 +1,99 @@
-Aplicativo PRWeb
+# Aplicativo PRWeb
 
-Este projeto automatiza o processamento de pedidos no PRWeb com Selenium e agora possui uma interface em PySide6 para uso como aplicativo desktop.
+Aplicativo desktop em Python para automatizar transferencias de pedidos no PRWeb via Selenium.
 
-Funcionalidades
-- Importar planilha Excel com as colunas obrigatorias: Pedidos e desm.
-- Abrir uma planilha de saida ja gerada para analisar pedidos com erro e o motivo em msg.
-- Executar o processamento no PRWeb usando os mesmos XPaths do script original.
-- Registrar em msg o retorno de alerta (ou erro) por linha.
-- Salvar automaticamente o resultado processado no arquivo de saida informado.
+O projeto possui dois modos de uso:
+- Interface grafica em PySide6 (recomendado): `app_pyside6.py`
+- Linha de comando (CLI): `cargas.py`
 
-Arquivos principais
-- cargas.py: logica de automacao Selenium (refatorada para ser reutilizavel).
-- app_pyside6.py: interface desktop com importacao/processamento/exportacao.
+## Funcionalidades
 
-Instalacao
-1. Criar/ativar ambiente virtual Python.
-2. Instalar dependencias:
+- Importar planilha `.xlsx` com pedidos.
+- Validar colunas obrigatorias (`Pedidos` e `desm`).
+- Processar os pedidos no PRWeb com preenchimento automatico dos campos de transferencia.
+- Registrar o retorno por linha na coluna `msg` (alertas, erros ou sucesso).
+- Salvar automaticamente o resultado em arquivo `.xlsx`.
+- Reabrir e analisar uma planilha de saida, com opcao de filtrar apenas linhas com mensagem.
 
-	pip install -r requirements.txt
+## Estrutura do projeto
 
-Como executar
+- `app_pyside6.py`: interface desktop, tabela de visualizacao e fluxo de importacao/processamento/analise.
+- `cargas.py`: automacao Selenium, leitura/escrita de planilhas e modo CLI.
+- `requirements.txt`: dependencias do projeto.
+- `AppPRWeb.spec`: especificacao para build de executavel (PyInstaller).
 
-Modo aplicativo (recomendado)
-1. Execute:
+## Requisitos
 
-	python app_pyside6.py
+- Python 3.10+ (recomendado 3.11)
+- Google Chrome instalado
+- Acesso de rede ao PRWeb: `https://prweb01/bahia/gateway`
 
-2. Na tela:
-- Selecione o arquivo Excel de entrada.
-- Informe ou selecione o arquivo Excel de saida para salvar e/ou analisar depois.
-- Ajuste os campos de configuracao (empresa, login, senha, filial, etc).
-- Clique em Processar no PRWeb.
-- Use Analisar Saida para reabrir a planilha gerada e filtrar as linhas com mensagem, se desejar.
+## Instalacao
 
-Modo script legado
-1. Coloque o arquivo pedidos.xlsx na pasta do projeto.
-2. Execute:
+1. Crie e ative um ambiente virtual.
+2. Instale as dependencias:
 
-	python cargas.py
+```bash
+pip install -r requirements.txt
+```
 
-3. O arquivo pedidos_resultado.xlsx sera gerado na pasta do projeto.
+## Uso - Interface grafica (recomendado)
 
-Observacoes
-- O navegador Chrome sera aberto durante a execucao.
-- A automacao depende do acesso interno ao endereco: https://prweb01/bahia/gateway.
-- A coluna msg e usada para armazenar alerta/erro por linha processada.
-- Para arquivos .xlsx, a dependencia openpyxl faz parte do projeto e deve ser incluida no build do executavel.
+Execute:
+
+```bash
+python app_pyside6.py
+```
+
+Fluxo na tela:
+
+1. Clique em **Importar Entrada** e selecione a planilha `.xlsx`.
+2. Defina o caminho de **Saida / Analise**.
+3. Preencha os parametros de configuracao (empresa, login, senha, filial, atividade, motivo, carga).
+4. Clique em **Processar no PRWeb**.
+5. Acompanhe o status na barra inferior.
+6. Ao final, o arquivo de saida sera salvo automaticamente.
+7. Use **Analisar Saida** para reabrir o arquivo e, se quiser, marque **Exportar apenas linhas com mensagem**.
+
+## Uso - Linha de comando (CLI)
+
+Exemplo basico:
+
+```bash
+python cargas.py pedidos.xlsx --saida pedidos_resultado.xlsx
+```
+
+Exemplo com parametros:
+
+```bash
+python cargas.py pedidos.xlsx --empresa-gateway 29 --empresa-pr 21 --login 123456 --senha SUA_SENHA --filial 1200 --atividade D --motivo 35 --carga 17404047
+```
+
+Para ver todas as opcoes:
+
+```bash
+python cargas.py --help
+```
+
+## Formato da planilha de entrada
+
+A planilha deve conter, no minimo, as colunas:
+
+- `Pedidos`
+- `desm`
+
+Colunas adicionadas/atualizadas no resultado:
+
+- `msg`: mensagem de alerta/erro/sucesso por linha.
+- `status`: coluna de apoio (mantida pela normalizacao dos dados).
+
+## Comportamento de salvamento
+
+- O resultado e salvo em `.xlsx` usando `openpyxl`.
+- Se o arquivo de saida estiver bloqueado (ex.: aberto no Excel), o sistema cria um arquivo alternativo com timestamp.
+
+## Observacoes importantes
+
+- O Chrome sera aberto durante a execucao da automacao.
+- Os seletores Selenium dependem da tela atual do PRWeb; mudancas no sistema podem exigir ajuste de codigo.
+- Evite versionar senhas reais em codigo, scripts ou arquivos compartilhados.

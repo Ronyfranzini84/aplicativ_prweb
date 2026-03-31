@@ -238,7 +238,7 @@ class PRWebAutomation:
         campo_desm.send_keys(desm_limpo)
   
         driver.find_element(By.ID, "NM_BOT_PRC").click()
-        time.sleep(1)
+       
 
         mensagens = self._capturar_alertas(timeout=2)
         if mensagens:
@@ -249,12 +249,12 @@ class PRWebAutomation:
         campo_motivo = driver.find_element(By.NAME, "CD_MMCETG")
         campo_motivo.clear()
         campo_motivo.send_keys(str(self.config.motivo))
-        time.sleep(1)
+        
 
         campo_carga = driver.find_element(By.NAME, "CD_CGAETG_DST")
         campo_carga.clear()
         campo_carga.send_keys(str(self.config.carga))
-        time.sleep(1)
+    
 
         driver.find_element(By.ID, "NM_BOT_PRC").click()
         time.sleep(1)
