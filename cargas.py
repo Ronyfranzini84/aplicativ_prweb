@@ -228,24 +228,20 @@ class PRWebAutomation:
         campo_senha = wait.until(EC.presence_of_element_located((By.NAME, "CD_USRSGR_SNH_CPL")))
         campo_senha.clear()
         campo_senha.send_keys(self.config.senha)
-        time.sleep(1)
-
+   
         campo_pedido = driver.find_element(By.NAME, "CD_DOCTO")
         campo_pedido.clear()
         campo_pedido.send_keys(pedido)
-        time.sleep(1)
 
         campo_desm = driver.find_element(By.NAME, "CD_PVEMCR_DSM")
         campo_desm.clear()
         campo_desm.send_keys(desm_limpo)
-        time.sleep(1)
-
+  
         driver.find_element(By.ID, "NM_BOT_PRC").click()
         time.sleep(1)
 
         mensagens = self._capturar_alertas(timeout=2)
         if mensagens:
-            pedidos.at[index, "status"] = "ERRO"
             pedidos.at[index, "msg"] = " | ".join(mensagens)
             self._limpar_tela()
             return
@@ -265,10 +261,8 @@ class PRWebAutomation:
 
         mensagens = self._capturar_alertas(timeout=3)
         if mensagens:
-            pedidos.at[index, "status"] = "ERRO"
             pedidos.at[index, "msg"] = " | ".join(mensagens)
         else:
-            pedidos.at[index, "status"] = "OK"
             pedidos.at[index, "msg"] = "Processado sem erro"
 
         self._limpar_tela()
@@ -290,7 +284,6 @@ class PRWebAutomation:
                     self._processar_linha(pedidos, index, str(pedido), str(desm))
                 except UnexpectedAlertPresentException:
                     mensagens = self._capturar_alertas(timeout=3)
-                    pedidos.at[index, "status"] = "ERRO"
                     pedidos.at[index, "msg"] = (
                         " | ".join(mensagens)
                         if mensagens
@@ -298,16 +291,13 @@ class PRWebAutomation:
                     )
                     self._limpar_tela()
                 except InvalidSessionIdException as exc:
-                    pedidos.at[index, "status"] = "ERRO"
                     pedidos.at[index, "msg"] = f"Sessao encerrada: {exc}"
                     break
                 except WebDriverException as exc:
                     mensagens = self._capturar_alertas(timeout=2)
-                    pedidos.at[index, "status"] = "ERRO"
                     pedidos.at[index, "msg"] = " | ".join(mensagens) if mensagens else f"Erro Selenium: {exc}"
                     self._limpar_tela()
                 except Exception as exc:
-                    pedidos.at[index, "status"] = "ERRO"
                     pedidos.at[index, "msg"] = f"Erro no processamento: {exc}"
                     self._limpar_tela()
 
