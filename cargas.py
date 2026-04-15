@@ -30,7 +30,7 @@ class PRWebConfig:
     senha: str
     filial: int
     atividade: str = "D"
-    motivo: int = 35
+    motivo: int = 0
     carga: int = 0
     url: str = "https://prweb01/bahia/gateway"
     webdriver_wait: int = 10
@@ -324,7 +324,7 @@ def _parse_args():
 
     parser = argparse.ArgumentParser(
         description="Processa transferencias de pedidos no PRWeb via Selenium.",
-        epilog="Exemplo: python cargas.py pedidos.xlsx --carga 17404047 --filial 1200",
+        epilog="Exemplo: python cargas.py pedidos.xlsx --carga 0 --filial 0",
     )
     parser.add_argument("entrada", nargs="?", default="pedidos.xlsx",
                         help="Planilha .xlsx de entrada (default: pedidos.xlsx)")
@@ -332,12 +332,12 @@ def _parse_args():
                         help="Arquivo .xlsx de saida (default: pedidos_resultado.xlsx)")
     parser.add_argument("--empresa-gateway", type=int, default=29, metavar="N")
     parser.add_argument("--empresa-pr", type=int, default=21, metavar="N")
-    parser.add_argument("--login", type=int, default=3471500, metavar="N")
+    parser.add_argument("--login", type=int, default=0, metavar="N")
     parser.add_argument("--senha", default="VAREJO1289")
-    parser.add_argument("--filial", type=int, default=1200, metavar="N")
+    parser.add_argument("--filial", type=int, default=0, metavar="N")
     parser.add_argument("--atividade", default="D")
-    parser.add_argument("--motivo", type=int, default=35, metavar="N")
-    parser.add_argument("--carga", type=int, default=17404047, metavar="N")
+    parser.add_argument("--motivo", type=int, default=0, metavar="N")
+    parser.add_argument("--carga", type=int, default=0, metavar="N")
     return parser.parse_args()
 
 

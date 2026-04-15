@@ -94,33 +94,66 @@ Colunas adicionadas/atualizadas no resultado:
 
 ## Gerar executavel (Windows)
 
-Use Python 3.11 para o build. O comando abaixo ja inclui a coleta de modulos do `webdriver_manager`, evitando o erro de import no executavel.
+Use Python 3.11 para o build.
 
-1. Criar ambiente de build com Python 3.11:
+### 1) Preparar ambiente de build
+
+Criar ambiente virtual:
 
 ```powershell
 py -3.11 -m venv .venv311
 ```
 
-2. Instalar dependencias no ambiente de build:
+Instalar dependencias:
 
 ```powershell
 .\.venv311\Scripts\python.exe -m pip install -r requirements.txt pyinstaller webdriver-manager
 ```
 
-3. Gerar o executavel:
+### 2) Executavel da interface grafica (recomendado)
+
+Esse e o executavel que abre a tela do sistema:
 
 ```powershell
 .\.venv311\Scripts\python.exe -m PyInstaller app_pyside6.py --name AppPRWeb --onedir --windowed --noconfirm --clean --hidden-import openpyxl --hidden-import webdriver_manager --collect-submodules webdriver_manager
 ```
 
-Saida gerada em:
+Saida:
 
 - `dist\AppPRWeb\AppPRWeb.exe`
 
 Observacao:
 
 - Para distribuir, compacte a pasta inteira `dist\AppPRWeb` (nao apenas o `.exe`).
+
+### 3) Executavel da linha de comando (CLI)
+
+Esse executavel nao abre interface grafica. Ele roda por parametros/arquivo de entrada.
+
+```powershell
+.\.venv311\Scripts\python.exe -m PyInstaller --onefile --noconsole --icon=PRwebPedidos.ico --name PRwebPedidos --version-file=version.txt cargas.py
+```
+
+Saida:
+
+- `dist\PRwebPedidos.exe`
+
+## Se o app nao abrir
+
+Checklist rapido:
+
+1. Confirme se esta abrindo o executavel correto da interface: `dist\AppPRWeb\AppPRWeb.exe`.
+2. Verifique espaco em disco (build pode falhar sem espaco):
+
+```powershell
+Get-PSDrive -Name C | Select-Object Name,Free,@{Name='FreeGB';Expression={[math]::Round($_.Free/1GB,2)}}
+```
+
+3. Se necessario, gere uma build de debug com console para ver erros:
+
+```powershell
+.\.venv311\Scripts\python.exe -m PyInstaller app_pyside6.py --name AppPRWebDebug --onedir --console --noconfirm --clean --hidden-import openpyxl --hidden-import webdriver_manager --collect-submodules webdriver_manager
+```
 
 ## Observacoes importantes
 
